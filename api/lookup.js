@@ -5,11 +5,11 @@
 // =========================
 
 const API_KEYS = [
-    "7day demo",
+    "abhay-key-1",
     "abhay-key-2",
     "abhay-key-3",
     "abhay-key-4",
-    "abhay-key-5"
+    "7day demo"
 ];
 
 export default async function handler(req, res) {
@@ -27,9 +27,17 @@ export default async function handler(req, res) {
     if (!userKey || !API_KEYS.includes(userKey)) {
 
         return res.status(401).json({
+
             success: false,
+
             error: "Invalid API Key",
-            developer: "@darkdeveloper02"
+
+            developer: {
+                name: "@darkdeveloper02",
+                telegram: "@darkdeveloper02",
+                buy: "@darkdeveloper02"
+            }
+
         });
 
     }
@@ -41,8 +49,17 @@ export default async function handler(req, res) {
         if (!number) {
 
             return res.status(400).json({
+
                 success: false,
-                error: "Mobile number required"
+
+                error: "Mobile number required",
+
+                developer: {
+                    name: "@darkdeveloper02",
+                    telegram: "@darkdeveloper02",
+                    buy: "@darkdeveloper02"
+                }
+
             });
 
         }
@@ -140,10 +157,31 @@ export default async function handler(req, res) {
                 const rationText =
                     await rationResponse.text();
 
+                // =========================
+                // CLEAN RESPONSE
+                // =========================
+
+                const cleanResult = rationText
+                    .replace(/💳 BUY API :.*$/gim, "")
+                    .replace(/🆘 SUPPORT :.*$/gim, "")
+                    .replace(/━━━━━━━━━━━━━━━━━━━━━━━━━━━/g, "")
+                    .replace(/[├└┌┐│─]/g, "")
+                    .trim();
+
+                // =========================
+                // LINE FORMAT
+                // =========================
+
+                const lines = cleanResult
+                    .split("\n")
+                    .map(line => line.trim())
+                    .filter(line => line.length > 0);
+
                 rationResults.push({
 
                     aadhaar,
-                    result: rationText
+
+                    result: lines
 
                 });
 
@@ -152,6 +190,7 @@ export default async function handler(req, res) {
                 rationResults.push({
 
                     aadhaar,
+
                     error: "Ration API Failed"
 
                 });
@@ -193,8 +232,14 @@ export default async function handler(req, res) {
         return res.status(500).json({
 
             success: false,
+
             error: err.message,
-            developer: "@darkdeveloper02"
+
+            developer: {
+                name: "@darkdeveloper02",
+                telegram: "@darkdeveloper02",
+                buy: "@darkdeveloper02"
+            }
 
         });
 
