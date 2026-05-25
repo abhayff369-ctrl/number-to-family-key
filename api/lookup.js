@@ -5,7 +5,7 @@
 // =========================
 
 const API_KEYS = [
-    "abhay-key-1",
+    "7day demo",
     "abhay-key-2",
     "abhay-key-3",
     "abhay-key-4",
