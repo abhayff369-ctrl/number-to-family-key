@@ -1,4 +1,16 @@
-const API_KEY = process.env.API_KEY;
+// api/lookup.js
+
+// =========================
+// MULTIPLE API KEYS
+// =========================
+
+const API_KEYS = [
+    "abhay-key-1",
+    "abhay-key-2",
+    "abhay-key-3",
+    "abhay-key-4",
+    "abhay-key-5"
+];
 
 export default async function handler(req, res) {
 
@@ -12,11 +24,12 @@ export default async function handler(req, res) {
         req.headers["x-api-key"] ||
         req.query.key;
 
-    if (!userKey || userKey !== API_KEY) {
+    if (!userKey || !API_KEYS.includes(userKey)) {
 
         return res.status(401).json({
             success: false,
-            error: "Invalid API Key"
+            error: "Invalid API Key",
+            developer: "@darkdeveloper02"
         });
 
     }
@@ -39,7 +52,7 @@ export default async function handler(req, res) {
         // =========================
 
         const mobileApi =
-            `YOUR_MOBILE_API${number}`;
+            `https://exploitsindia.site/api/number.php?exploits=${number}`;
 
         const mobileResponse =
             await fetch(mobileApi);
@@ -119,7 +132,7 @@ export default async function handler(req, res) {
             try {
 
                 const rationApi =
-                    `YOUR_RATION_API${aadhaar}`;
+                    `https://exploitsindia.site/api/family.php?exploits=${aadhaar}`;
 
                 const rationResponse =
                     await fetch(rationApi);
@@ -148,36 +161,40 @@ export default async function handler(req, res) {
         }
 
         // =========================
-// FINAL RESPONSE
-// =========================
+        // FINAL RESPONSE
+        // =========================
 
-return res.status(200).json({
+        return res.status(200).json({
 
-    success: true,
+            success: true,
 
-    developer: {
-        name: "@darkdeveloper02",
-        telegram: "@darkdeveloper02",
-        buy: "@darkdeveloper02"
-    },
+            developer: {
+                name: "@darkdeveloper02",
+                telegram: "@darkdeveloper02",
+                buy: "@darkdeveloper02"
+            },
 
-    mobile_lookup: mainData,
+            used_key: userKey,
 
-    aadhaar_found:
-        aadhaars.length,
+            mobile_lookup: mainData,
 
-    aadhaars,
+            aadhaar_found:
+                aadhaars.length,
 
-    ration_lookup:
-        rationResults
+            aadhaars,
 
-});
+            ration_lookup:
+                rationResults
+
+        });
+
     } catch (err) {
 
         return res.status(500).json({
 
             success: false,
-            error: err.message
+            error: err.message,
+            developer: "@darkdeveloper02"
 
         });
 
