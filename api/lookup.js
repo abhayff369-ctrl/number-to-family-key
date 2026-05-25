@@ -148,25 +148,30 @@ export default async function handler(req, res) {
         }
 
         // =========================
-        // FINAL RESPONSE
-        // =========================
+// FINAL RESPONSE
+// =========================
 
-        return res.status(200).json({
+return res.status(200).json({
 
-            success: true,
+    success: true,
 
-            mobile_lookup: mainData,
+    developer: {
+        name: "@darkdeveloper02",
+        telegram: "@darkdeveloper02",
+        buy: "@darkdeveloper02"
+    },
 
-            aadhaar_found:
-                aadhaars.length,
+    mobile_lookup: mainData,
 
-            aadhaars,
+    aadhaar_found:
+        aadhaars.length,
 
-            ration_lookup:
-                rationResults
+    aadhaars,
 
-        });
+    ration_lookup:
+        rationResults
 
+});
     } catch (err) {
 
         return res.status(500).json({
