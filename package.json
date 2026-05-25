@@ -1,0 +1,11 @@
+{
+  "name": "mobile-lookup-api",
+  "version": "1.0.0",
+  "description": "Mobile Lookup API",
+  "main": "api/lookup.js",
+  "type": "module",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {}
+}
