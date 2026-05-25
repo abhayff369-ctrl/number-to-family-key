@@ -3,7 +3,7 @@ const API_KEYS = [
     "abhay-key-1",
     "abhay-key-2",
     "abhay-key-3",
-    "demo",
+    "123456",
     "7day demo"
 ];
 
