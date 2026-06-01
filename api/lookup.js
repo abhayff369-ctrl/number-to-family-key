@@ -4,7 +4,7 @@ const API_KEYS = [
     "abhay-key-2",
     "abhay-key-3",
     "123456",
-    "7days"
+    "team6months"
 ];
 
 export default async function handler(req, res) {
