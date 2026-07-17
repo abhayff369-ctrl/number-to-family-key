@@ -61,7 +61,7 @@ export default async function handler(req, res) {
         // MOBILE API
         // =========================
 
-        const mobileApi = `https://exploitsindia.site/api/number.php?exploits=${number}`;
+        const mobileApi = ``;
 
         const mobileResponse = await fetch(mobileApi);
         const mobileText = await mobileResponse.text();
