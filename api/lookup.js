@@ -1,4 +1,5 @@
 
+
 const API_KEYS = [
     "abhay-key-1",
     "abhay-key-2",
@@ -12,7 +13,7 @@ export default async function handler(req, res) {
     res.setHeader("Content-Type", "application/json");
 
     // =========================
-    // API KEY CHECK
+    // 1. API KEY CHECK
     // =========================
 
     const userKey =
@@ -20,200 +21,121 @@ export default async function handler(req, res) {
         req.query.key;
 
     if (!userKey || !API_KEYS.includes(userKey)) {
-
         return res.status(401).json({
-
             success: false,
             error: "Invalid API Key",
-
             developer: {
                 name: "@darkdeveloper02",
                 telegram: "@darkdeveloper02",
                 buy: "@darkdeveloper02"
             }
-
         });
-
     }
 
     try {
 
-        const number = req.query.number;
+        // =========================
+        // 2. GET MOBILE NUMBER
+        // =========================
+
+        const number = req.query.number || req.query.q;
 
         if (!number) {
-
             return res.status(400).json({
-
                 success: false,
-                error: "Mobile number required",
-
+                error: "Mobile number required (use ?number= or ?q=)",
                 developer: {
                     name: "@darkdeveloper02",
                     telegram: "@darkdeveloper02",
                     buy: "@darkdeveloper02"
                 }
-
             });
-
         }
 
         // =========================
-        // MOBILE API
+        // 3. CALL EXTERNAL API
         // =========================
 
-        const mobileApi = ``;
+        const externalApi = `https://cognitive-feelings-casting-brian.trycloudflare.com/search?q=${number}`;
 
-        const mobileResponse = await fetch(mobileApi);
-        const mobileText = await mobileResponse.text();
-
-        // =========================
-        // EXTRACT FUNCTION
-        // =========================
-
-        const extract = (regex) => {
-            const match = mobileText.match(regex);
-            return match ? match[1].trim() : null;
-        };
-
-        const mainData = {
-            mobile: number,
-            name: extract(/👤 Name:\s*(.+)/i),
-            father_name: extract(/👨‍👦 Father Name:\s*(.+)/i),
-            address: extract(/🏠 Address:\s*(.+)/i),
-            circle: extract(/📡 Circle:\s*(.+)/i)
-        };
+        const response = await fetch(externalApi);
+        const data = await response.json();
 
         // =========================
-        // AADHAAR EXTRACTION
+        // 4. CHECK API RESPONSE
         // =========================
 
-        const aadhaarRegex = /🪪 Aadhaar:\s*([0-9]{12})/gi;
-        const aadhaarMatches = [...mobileText.matchAll(aadhaarRegex)];
-
-        let aadhaars = [];
-
-        aadhaarMatches.forEach(m => {
-            aadhaars.push(m[1]);
-        });
-
-        aadhaars = [...new Set(aadhaars)];
-
-        // =========================
-        // RATION PARSER (CLEAN JSON)
-        // =========================
-
-        const parseRation = (text) => {
-
-            const clean = text
-                .replace(/💳 BUY API :.*$/gim, "")
-                .replace(/🆘 SUPPORT :.*$/gim, "")
-                .replace(/━━━━━━━━━━━━━━━━━━━━━━━━━━━/g, "")
-                .trim();
-
-            const lines = clean
-                .split("\n")
-                .map(l => l.trim())
-                .filter(Boolean);
-
-            return {
-
-                title: lines[0] || null,
-
-                ration_card: {
-                    id: lines.find(l => l.includes("Ration Card/Aadhaar"))?.split(":")[1]?.trim() || null,
-                    card_no: lines.find(l => l.includes("Card No"))?.split(":")[1]?.trim() || null,
-                    scheme: lines.find(l => l.includes("Scheme"))?.split(":")[1]?.trim() || null
-                },
-
-                location: {
-                    state: lines.find(l => l.includes("State"))?.split(":")[1]?.trim() || null,
-                    district: lines.find(l => l.includes("District"))?.split(":")[1]?.trim() || null
-                },
-
-                info: {
-                    central_repository: lines.find(l => l.includes("Central Repository"))?.split(":")[1]?.trim() || null,
-                    duplicate_aadhaar: lines.find(l => l.includes("Duplicate Aadhaar"))?.split(":")[1]?.trim() || null,
-                    fps_category: lines.find(l => l.includes("FPS Category"))?.split(":")[1]?.trim() || null,
-                    impds: lines.find(l => l.includes("IMPDS"))?.split(":")[1]?.trim() || null
-                },
-
-                family_members: lines
-                    .filter(l => l.includes("👤"))
-                    .map(l => l.replace("👤", "").trim())
-
-            };
-        };
+        if (!data.status || !data.results || data.results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "No results found for this number",
+                developer: {
+                    name: "@darkdeveloper02",
+                    telegram: "@darkdeveloper02",
+                    buy: "@darkdeveloper02"
+                }
+            });
+        }
 
         // =========================
-        // RATION LOOKUP LOOP
+        // 5. CLEAN & FORMAT RESULTS
         // =========================
 
-        let rationResults = [];
+        const formattedResults = data.results.map(item => ({
+            mobile: item.mobile || number,
+            name: item.name || null,
+            fname: item.fname || null,
+            address: item.address ? item.address.replace(/!/g, ", ") : null,
+            alt: item.alt || null,
+            circle: item.circle || null,
+            id: item.id || null,
+            email: item.email || null
+        }));
 
-        for (const aadhaar of aadhaars) {
+        // =========================
+        // 6. REMOVE DUPLICATES (based on name + address)
+        // =========================
 
-            try {
+        const uniqueResults = [];
+        const seen = new Set();
 
-                const rationApi = `https://exploitsindia.site/api/family.php?exploits=${aadhaar}`;
-
-                const rationResponse = await fetch(rationApi);
-                const rationText = await rationResponse.text();
-
-                rationResults.push({
-                    aadhaar,
-                    result: parseRation(rationText)
-                });
-
-            } catch (err) {
-
-                rationResults.push({
-                    aadhaar,
-                    error: "Ration API Failed"
-                });
-
+        for (const item of formattedResults) {
+            const key = `${item.name}|${item.address}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueResults.push(item);
             }
         }
 
         // =========================
-        // FINAL RESPONSE
+        // 7. FINAL RESPONSE
         // =========================
 
         return res.status(200).json({
-
             success: true,
-
+            query: number,
+            total_found: data.count || data.results.length,
+            total_unique: uniqueResults.length,
+            results: uniqueResults,
             developer: {
                 name: "@darkdeveloper02",
                 telegram: "@darkdeveloper02",
                 buy: "@darkdeveloper02"
             },
-
-            used_key: userKey,
-
-            mobile_lookup: mainData,
-
-            aadhaar_found: aadhaars.length,
-
-            aadhaars,
-
-            ration_lookup: rationResults
-
+            used_key: userKey
         });
 
     } catch (err) {
 
         return res.status(500).json({
-
             success: false,
-            error: err.message,
-
+            error: err.message || "Internal Server Error",
             developer: {
                 name: "@darkdeveloper02",
                 telegram: "@darkdeveloper02",
                 buy: "@darkdeveloper02"
             }
-
         });
 
     }
-}
+            }
